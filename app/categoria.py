@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://root:neozorwave010103@localhost:3307/bdpythonapi'
+app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://root:SE212511374@localhost:3307/bdpythonapi'
 app.config['SQLALCHEMY_TRACK_NOTIFICATIONS']= False
 
 db= SQLAlchemy(app)

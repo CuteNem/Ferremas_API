@@ -16,3 +16,11 @@ class Product(db.Model):
     is_new_release = db.Column(db.Boolean, default=False)
     added_to_promotion = db.Column(db.DateTime, nullable=True)
     added_to_new_release = db.Column(db.DateTime, nullable=True)
+    prices = db.relationship('PriceHistory', backref='product', lazy=True)
+
+class PriceHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    date_added = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+

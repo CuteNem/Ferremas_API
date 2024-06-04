@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from config import Config
-from models import db, Category, Product
+from models import db, Category, Product, PriceHistory
 from datetime import datetime
 
 app = Flask(__name__)
@@ -81,6 +81,11 @@ def get_new_releases():
     new_releases = Product.query.filter_by(is_new_release=True).all()
     return jsonify([{"id": product.id, "name": product.name} for product in new_releases])
 
+@app.route('/products/<int:product_id>/prices', methods=['GET'])
+def get_price_history(product_id):
+    product = Product.query.get_or_404(product_id)
+    prices = PriceHistory.query.filter_by(product_id=product.id).order_by(PriceHistory.date_added.desc()).all()
+    return jsonify([{"price": price.price, "date_added": price.date_added} for price in prices])
+
 if __name__ == '__main__':
     app.run(debug=True)
-

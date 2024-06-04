@@ -1,0 +1,35 @@
+PRUEBAS CON URL
+
+1- OBTENER UN PRODUCTO X CATEGORIA + LISTA DE CATEGORIAS
+Obtener lista de categorias http://127.0.0.1:5000/categories
+Obtener producto por categoria http://127.0.0.1:5000/categories/1/products
+
+2- GESTIÓN DE PRODUCTOS PROMOCION + LANZAMIENTOS RECIENTES
+
+Agregar un producto a promoción: PUT /products/<int:product_id>/promotion
+Eliminar un producto de promoción: DELETE /products/<int:product_id>/promotion
+Agregar un producto a lanzamientos recientes: PUT /products/<int:product_id>/new_release
+Eliminar un producto de lanzamientos recientes: DELETE /products/<int:product_id>/new_release
+Obtener todos los productos en promoción: GET /promotions
+Obtener todos los lanzamientos recientes: GET /new_releases
+
+Obtener productos en promoción  http://127.0.0.1:5000/promotions
+Obtener lanzamientos recientes  http://127.0.0.1:5000/new_releases
+
+3- HISTORIAL DE PRECIOS POR PRODUCTO
+
+Obtener historial  http://127.0.0.1:5000/products/1/prices
+
+-FORMATO DESEADO
+{
+"Código del producto": "FER-12345",
+"Marca": "Bosch",
+"Código": "BOS-67890",
+"Nombre": "Taladro Percutor Bosch",
+"Precio": [
+{
+"Fecha": "2023-05-10T03:00:00.000Z",
+"Valor": 89090.99
+}
+]
+}

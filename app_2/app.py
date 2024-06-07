@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from config import Config
-from models import db, Category, Product, PriceHistory
+from models import db, Category, Product, PriceHistory, Branch, ProductAvailability
 from datetime import datetime
 
 app = Flask(__name__)
@@ -9,8 +9,7 @@ db.init_app(app)
 
 # Crear las tablas de la base de datos si no existen
 with app.app_context():
-    db.drop_all()  # Borrar todas las tablas existentes
-    db.create_all()  # Crear todas las tablas de nuevo
+    db.create_all()
 
 @app.route('/categories', methods=['GET'])
 def get_categories():
@@ -46,7 +45,6 @@ def add_product_to_promotion(product_id):
 def remove_product_from_promotion(product_id):
     product = Product.query.get_or_404(product_id)
     product.is_promotion = False
-    # Reassign the category if necessary
     product.category_id = request.json.get('category_id', product.category_id)
     product.added_to_promotion = None
     db.session.commit()
@@ -65,7 +63,6 @@ def add_product_to_new_release(product_id):
 def remove_product_from_new_release(product_id):
     product = Product.query.get_or_404(product_id)
     product.is_new_release = False
-    # Reassign the category if necessary
     product.category_id = request.json.get('category_id', product.category_id)
     product.added_to_new_release = None
     db.session.commit()
@@ -86,6 +83,65 @@ def get_price_history(product_id):
     product = Product.query.get_or_404(product_id)
     prices = PriceHistory.query.filter_by(product_id=product.id).order_by(PriceHistory.date_added.desc()).all()
     return jsonify([{"price": price.price, "date_added": price.date_added} for price in prices])
+
+@app.route('/products/<int:product_id>/prices', methods=['POST'])
+def add_price_history(product_id):
+    product = Product.query.get_or_404(product_id)
+    new_price_data = request.json
+    new_price = PriceHistory(
+        product_id=product.id,
+        price=new_price_data['price']
+    )
+    db.session.add(new_price)
+    db.session.commit()
+    return jsonify({"message": "Price history added successfully"}), 201
+
+@app.route('/branches', methods=['POST'])
+def add_branch():
+    new_branch_data = request.json
+    new_branch = Branch(
+        name=new_branch_data['name'],
+        location=new_branch_data['location']
+    )
+    db.session.add(new_branch)
+    db.session.commit()
+    return jsonify({"message": "Branch added successfully"}), 201
+
+@app.route('/branches/<int:branch_id>/products/<int:product_id>', methods=['PUT'])
+def update_product_availability(branch_id, product_id):
+    data = request.json
+    availability = ProductAvailability.query.filter_by(branch_id=branch_id, product_id=product_id).first()
+    if availability:
+        availability.quantity = data['quantity']
+    else:
+        availability = ProductAvailability(
+            branch_id=branch_id,
+            product_id=product_id,
+            quantity=data['quantity']
+        )
+        db.session.add(availability)
+    db.session.commit()
+    return jsonify({"message": "Product availability updated successfully"}), 200
+
+@app.route('/branches/<int:branch_id>/products', methods=['GET'])
+def get_branch_products(branch_id):
+    branch = Branch.query.get_or_404(branch_id)
+    availability = ProductAvailability.query.filter_by(branch_id=branch.id).all()
+    return jsonify([{
+        "product_id": item.product_id,
+        "product_name": item.product.name,
+        "quantity": item.quantity
+    } for item in availability])
+
+@app.route('/products/<int:product_id>/branches', methods=['GET'])
+def get_product_availability(product_id):
+    product = Product.query.get_or_404(product_id)
+    availability = ProductAvailability.query.filter_by(product_id=product.id).all()
+    return jsonify([{
+        "branch_id": item.branch_id,
+        "branch_name": item.branch.name,
+        "quantity": item.quantity
+    } for item in availability])
 
 if __name__ == '__main__':
     app.run(debug=True)

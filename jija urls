@@ -33,3 +33,14 @@ Obtener historial  http://127.0.0.1:5000/products/1/prices
 }
 ]
 }
+
+4- PRODUCTOS X SUCURSAL
+
+para actualizar el stock de una sucursal
+curl -X PUT -H "Content-Type: application/json" -d '{"quantity": 10}' http://127.0.0.1:5000/branches/1/products/1
+
+Obtener los productos disponibles de una sucursal curl http://127.0.0.1:5000/branches/1/products
+Obtener disponibilidad DE UN PRODUCTO en todas las sucursales curl http://127.0.0.1:5000/products/1/branches
+
+5- API DE PAGO 
+[NO FUNCIONANDO --REVISAR]

@@ -1,11 +1,23 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, url_for
 from config import Config
 from models import db, Category, Product, PriceHistory, Branch, ProductAvailability
+from paypalrestsdk import Payment
+import paypalrestsdk
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+
+paypalrestsdk.configure({
+    "mode": app.config['PAYPAL_MODE'],
+    "client_id": app.config['PAYPAL_CLIENT_ID'],
+    "client_secret": app.config['PAYPAL_CLIENT_SECRET']
+})
 
 # Crear las tablas de la base de datos si no existen
 with app.app_context():
@@ -142,6 +154,61 @@ def get_product_availability(product_id):
         "branch_name": item.branch.name,
         "quantity": item.quantity
     } for item in availability])
+
+@app.route('/pay', methods=['POST'])
+def pay():
+    payment_info = request.json
+    product = Product.query.get_or_404(payment_info['product_id'])
+
+    payment = Payment({
+        "intent": "sale",
+        "payer": {
+            "payment_method": "paypal"
+        },
+        "redirect_urls": {
+            "return_url": url_for('payment_executed', _external=True),
+            "cancel_url": url_for('payment_cancelled', _external=True)
+        },
+        "transactions": [{
+            "item_list": {
+                "items": [{
+                    "name": product.name,
+                    "sku": str(product.id),
+                    "price": str(payment_info['price']),
+                    "currency": "USD",
+                    "quantity": 1
+                }]
+            },
+            "amount": {
+                "total": str(payment_info['price']),
+                "currency": "USD"
+            },
+            "description": f"Compra del producto {product.name}"
+        }]
+    })
+
+    if payment.create():
+        for link in payment.links:
+            if link.rel == "approval_url":
+                approval_url = link.href
+                return jsonify({"approval_url": approval_url})
+    else:
+        return jsonify({"error": payment.error}), 400
+
+@app.route('/payment_executed', methods=['GET'])
+def payment_executed():
+    payment_id = request.args.get('paymentId')
+    payer_id = request.args.get('PayerID')
+
+    payment = Payment.find(payment_id)
+    if payment.execute({"payer_id": payer_id}):
+        return jsonify({"message": "Payment executed successfully"})
+    else:
+        return jsonify({"error": payment.error}), 400
+
+@app.route('/payment_cancelled', methods=['GET'])
+def payment_cancelled():
+    return jsonify({"message": "Payment cancelled"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

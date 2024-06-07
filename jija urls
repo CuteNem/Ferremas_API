@@ -44,3 +44,23 @@ Obtener disponibilidad DE UN PRODUCTO en todas las sucursales curl http://127.0.
 
 5- API DE PAGO 
 [NO FUNCIONANDO --REVISAR]
+
+6- GESTION DE MONEDAS
+[NO SE PUDO PIPIPI]
+
+7-CONSULTAS Y RESPUESTAS ENTRE VENDEDOR Y CLIENTE
+[PROBAR CON POSTMAN]
+
+Hacer una consulta
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"customer_id": 1, "seller_id": 1, "message": "¿Cuál es el precio de este producto?"}' \
+  http://localhost:5000/queries
+
+Dar una respuesta
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"message": "El precio del producto es $100."}' \
+  http://localhost:5000/queries/1/responses
+
+Mostrar preguntas (con o sin respuestas) curl http://localhost:5000/queries/1

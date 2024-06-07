@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, redirect, url_for
 from config import Config
-from models import db, Category, Product, PriceHistory, Branch, ProductAvailability
+from models import db, Category, Product, PriceHistory, Branch, ProductAvailability, Query, Response
 from paypalrestsdk import Payment
 import paypalrestsdk
 from datetime import datetime
@@ -209,6 +209,42 @@ def payment_executed():
 @app.route('/payment_cancelled', methods=['GET'])
 def payment_cancelled():
     return jsonify({"message": "Payment cancelled"}), 200
+
+@app.route('/queries', methods=['POST'])
+def create_query():
+    data = request.json
+    query = Query(customer_id=data['customer_id'], seller_id=data['seller_id'], message=data['message'])
+    db.session.add(query)
+    db.session.commit()
+    return jsonify({'message': 'Consulta creada correctamente'}), 201
+
+@app.route('/queries/<int:query_id>/responses', methods=['POST'])
+def create_response(query_id):
+    query = Query.query.get(query_id)
+    if not query:
+        return jsonify({'error': 'Consulta no encontrada'}), 404
+    data = request.json
+    response = Response(query_id=query.id, message=data['message'])
+    db.session.add(response)
+    db.session.commit()
+    return jsonify({'message': 'Respuesta creada correctamente'}), 201
+
+@app.route('/queries/<int:query_id>', methods=['GET'])
+def get_query(query_id):
+    query = Query.query.get(query_id)
+    if not query:
+        return jsonify({'error': 'Consulta no encontrada'}), 404
+
+    responses = Response.query.filter_by(query_id=query_id).all()
+    query_data = {
+        'id': query.id,
+        'customer_id': query.customer_id,
+        'seller_id': query.seller_id,
+        'message': query.message,
+        'timestamp': query.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+        'responses': [{'id': r.id, 'message': r.message, 'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')} for r in responses]
+    }
+    return jsonify(query_data)
 
 if __name__ == '__main__':
     app.run(debug=True)

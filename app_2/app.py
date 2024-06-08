@@ -1,17 +1,33 @@
 from flask import Flask, jsonify, request, redirect, url_for
 from config import Config
-from models import db, Category, Product, PriceHistory, Branch, ProductAvailability, Query, Response
+from models import db, Category, Product, PriceHistory, Branch, ProductAvailability, Query, Response, bcrypt, User
 from paypalrestsdk import Payment
 import paypalrestsdk
 from datetime import datetime
 from dotenv import load_dotenv
-
+from routes import auth_bp, users_bp
+from flask_login import LoginManager
+from flask_migrate import Migrate
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
+bcrypt.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+
+migrate = Migrate(app, db)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(users_bp, url_prefix='/api')
 
 paypalrestsdk.configure({
     "mode": app.config['PAYPAL_MODE'],
@@ -245,6 +261,7 @@ def get_query(query_id):
         'responses': [{'id': r.id, 'message': r.message, 'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')} for r in responses]
     }
     return jsonify(query_data)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,7 +1,20 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_bcrypt import Bcrypt
+from flask_login import UserMixin
 
 db = SQLAlchemy()
+bcrypt = Bcrypt()
+
+class User(UserMixin, db.Model):
+    __tablename__ = 'user'
+    id_user = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), nullable=False, unique=True)
+    email = db.Column(db.String(150), nullable=False, unique=True)
+    password = db.Column(db.String(150), nullable=False)
+    role = db.Column(db.String(50), nullable=False)  # 'customer' or 'seller'
+    customer = db.relationship('Customer', backref='user_account', uselist=False)
+    seller = db.relationship('Seller', backref='user_account', uselist=False)
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,13 +68,21 @@ class Response(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class Seller(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'seller'
+    #id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey('user.id_user'), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    user = db.relationship('User', backref='customer', uselist=False)
+    #id_user = db.Column(db.Integer, db.ForeignKey('user.id_user'), primary_key=True)
     # Otros campos de vendedor que desees agregar
 
 class Customer(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'customer'
+    #id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, db.ForeignKey('user.id_user'), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    user = db.relationship('User', backref='customer', uselist=False)
+    #id_user = db.Column(db.Integer, db.ForeignKey('user.id_user'), primary_key=True)
     # Otros campos de cliente que desees agregar

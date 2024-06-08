@@ -64,3 +64,7 @@ curl -X POST \
   http://localhost:5000/queries/1/responses
 
 Mostrar preguntas (con o sin respuestas) curl http://localhost:5000/queries/1
+
+8- SISTEMA DE AUTENTICACIÓN (LOGIN)
+
+instalar: pip install flask flask_sqlalchemy flask_bcrypt flask_login

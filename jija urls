@@ -33,3 +33,38 @@ Obtener historial  http://127.0.0.1:5000/products/1/prices
 }
 ]
 }
+
+4- PRODUCTOS X SUCURSAL
+
+para actualizar el stock de una sucursal
+curl -X PUT -H "Content-Type: application/json" -d '{"quantity": 10}' http://127.0.0.1:5000/branches/1/products/1
+
+Obtener los productos disponibles de una sucursal curl http://127.0.0.1:5000/branches/1/products
+Obtener disponibilidad DE UN PRODUCTO en todas las sucursales curl http://127.0.0.1:5000/products/1/branches
+
+5- API DE PAGO 
+[NO FUNCIONANDO --REVISAR]
+
+6- GESTION DE MONEDAS
+[NO SE PUDO PIPIPI]
+
+7-CONSULTAS Y RESPUESTAS ENTRE VENDEDOR Y CLIENTE
+[PROBAR CON POSTMAN]
+
+Hacer una consulta
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"customer_id": 1, "seller_id": 1, "message": "¿Cuál es el precio de este producto?"}' \
+  http://localhost:5000/queries
+
+Dar una respuesta
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"message": "El precio del producto es $100."}' \
+  http://localhost:5000/queries/1/responses
+
+Mostrar preguntas (con o sin respuestas) curl http://localhost:5000/queries/1
+
+8- SISTEMA DE AUTENTICACIÓN (LOGIN)
+
+instalar: pip install flask flask_sqlalchemy flask_bcrypt flask_login

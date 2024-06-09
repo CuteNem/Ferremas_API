@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from database.db import Config
-from models import db, Categoria_pdt, Producto, Sucursal, Estado, H_precio, Inventario
+from models import db, Categoria_pdt, Producto, Sucursal, Estado, H_precio, Inventario, Vendedor, Cliente, Consulta, Respuesta
 from datetime import datetime
 
 app = Flask(__name__)
@@ -76,6 +76,42 @@ def obtener_productos_por_sucursal(id_suc):
     inventario_suc = db.session.query(Inventario, Producto).join(Producto, Inventario.producto_id == Producto.id_prod).filter(Inventario.sucursal_id==sucursal_inv.id_suc).all()
     return jsonify([{"id del producto": Inventario.producto_id ,"nombre del producto": producto.nombre_prod,"cantidad": Inventario.stock} for Inventario, producto in inventario_suc])
 
+#sistema de consultas y respuestas
+@app.route('/pregunta', methods=['POST'])
+def hacer_consulta():
+    data = request.json
+    pregunta = Consulta(cliente_id=data['cliente_id'], vendedor_id=data['vendedor_id'], mensaje=data['mensaje'])
+    db.session.add(pregunta)
+    db.session.commit()
+    return jsonify({'mensaje': 'Consulta creada correctamente'}), 201
+
+@app.route('/pregunta/<int:id_consulta>/respuesta', methods=['POST'])
+def escribir_respuesta(id_consulta):
+    consulta = Consulta.query.get(id_consulta)
+    if not consulta:
+        return jsonify({'error': 'Consulta no encontrada'}), 404
+    data = request.json
+    respuesta = Respuesta(consulta_id=id_consulta, mensaje=data['mensaje'])
+    db.session.add(respuesta)
+    db.session.commit()
+    return jsonify({'mensaje': 'Respuesta creada correctamente'}), 201
+
+@app.route('/pregunta/<int:id_consulta>', methods=['GET'])
+def ver_pregunta(id_consulta):
+    consulta = Consulta.query.get(id_consulta)
+    if not consulta:
+        return jsonify({'error': 'Consulta no encontrada'}), 404
+
+    respuestas = Respuesta.query.filter_by(consulta_id=id_consulta).all()
+    datos_pregunta = {
+        'id': Consulta.id_consulta,
+        'customer_id': Consulta.cliente_id,
+        'seller_id': Consulta.vendedor_id,
+        'message': Consulta.mensaje,
+        'timestamp': Consulta.tiempo_de_consulta.strftime('%Y-%m-%d %H:%M:%S'),
+        'responses': [{'id': r.id_respuesta, 'mensaje': r.mensaje, 'Tiempo_respuesta': r.tiempo_de_respuesta.strftime('%Y-%m-%d %H:%M:%S')} for r in respuestas]
+    }
+    return jsonify(datos_pregunta)
 
 
 

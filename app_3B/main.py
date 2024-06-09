@@ -7,7 +7,10 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
-# Crear las tablas de la base de datos si no existen
+#@app.before_first_request
+#def create_tables():
+#    db.create_all()
+
 with app.app_context():
     db.create_all()
 

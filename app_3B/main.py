@@ -36,6 +36,13 @@ def agregar_producto():
     db.session.commit()
     return jsonify({"mensaje": "Nuevo producto añadido de forma exitosa"}), 201
 
+#obtener productos
+@app.route('/productos_total', methods=['GET'])
+def obtener_total_productos():
+    #producto = Producto.query.all()
+    productos = db.session.query(Producto, Estado, Categoria_pdt).join(Estado, Producto.estado_id == Estado.id_estado).join(Categoria_pdt, Producto.categoria_id == Categoria_pdt.id_cat).all()
+    return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor, "categoria": categoria.nombre_cat, "estado": estado.tipo_estado} for Producto, estado, categoria in productos])
+
 #OBTENER PRODUCTOS EN PROMOCION
 @app.route('/promociones', methods=['GET'])
 def obtener_promos():

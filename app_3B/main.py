@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from database.db import Config
-from models import db, Categoria_pdt, Producto, Sucursal, Estado
+from models import db, Categoria_pdt, Producto, Sucursal, Estado, H_precio
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -49,6 +50,11 @@ def obtener_normales():
     normales = Producto.query.filter_by(estado_id=3).all()
     return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor} for Producto in normales])
 
+@app.route('/productos/<int:id_prod>/precios', methods=['GET'])
+def obtener_h_precios_producto(id_prod):
+    producto = Producto.query.get_or_404(id_prod)
+    precios_producto = H_precio.query.filter_by(producto_id=producto.id_prod).order_by(H_precio.fecha.desc()).all()
+    return jsonify([{"precio": H_precio.precio, "fecha": H_precio.fecha} for H_precio in precios_producto])
 
 
 

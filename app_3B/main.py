@@ -60,6 +60,8 @@ def obtener_h_precios_producto(id_prod):
     return jsonify([{"precio": H_precio.precio, "fecha": H_precio.fecha} for H_precio in precios_producto])
 
 """
+antiguo
+
 #VER PRODUCTOS POR SUCURSAL
 @app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
 def obtener_productos_por_sucursal(id_suc):
@@ -74,21 +76,7 @@ def obtener_productos_por_sucursal(id_suc):
     inventario_suc = db.session.query(Inventario, Producto).join(Producto, Inventario.producto_id == Producto.id_prod).filter(Inventario.sucursal_id==sucursal_inv.id_suc).all()
     return jsonify([{"id del producto": Inventario.producto_id ,"nombre del producto": producto.nombre_prod,"cantidad": Inventario.stock} for Inventario, producto in inventario_suc])
 
-"""
-@app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
-def obtener_productos_por_sucursal(id_suc):
-    sucursal_inv = Sucursal.query.get_or_404(id_suc)
-    inventario_suc = db.session.query(Inventario, Producto).join(Producto, Inventario.producto_id == Producto.id_prod).filter(Inventario.sucursal_id == sucursal_inv.id_suc).all()
-    
-    productos = []
-    for inventario, producto in inventario_suc:
-        productos.append({
-            "id del producto": inventario.producto_id,
-            "nombre del producto": producto.nombre_prod,
-            "cantidad": inventario.stock
-        })
-    return jsonify(productos)
-"""
+
 
 
 

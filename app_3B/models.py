@@ -14,7 +14,7 @@ class Producto(db.Model):
     marca = db.Column(db.String(100), nullable=False)
     valor = db.Column(db.Integer, nullable=False)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria_pdt.id_cat'), nullable=False)
-    sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id_suc'), nullable=False)
+    #sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id_suc'), nullable=False)
     estado_id = db.Column(db.Integer, db.ForeignKey('estado.id_estado'), nullable=False)
 
 class Sucursal(db.Model):

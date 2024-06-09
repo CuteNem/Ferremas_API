@@ -17,11 +17,13 @@ class Producto(db.Model):
     #sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id_suc'), nullable=False)
     estado_id = db.Column(db.Integer, db.ForeignKey('estado.id_estado'), nullable=False)
     #valor_r = db.relationship('h_precio', backref='producto', lazy=True)
+    inventario_producto_sucursal = db.relationship('Inventario', backref='producto', lazy=True)
 
 class Sucursal(db.Model):
     id_suc = db.Column(db.Integer, primary_key=True)
     nombre_suc = db.Column(db.String(100), nullable=False)
     ubicacion = db.Column(db.String(200), nullable=False)
+    inventario_productos = db.relationship('Inventario', backref='sucursal', lazy=True)
 
 class Estado(db.Model):
     id_estado = db.Column(db.Integer, primary_key=True)
@@ -32,3 +34,9 @@ class H_precio(db.Model):
     fecha = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     precio = db.Column(db.Integer, nullable=False)
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id_prod'), nullable=False) 
+
+class Inventario(db.Model):
+    id_inv = db.Column(db.Integer, primary_key=True)
+    stock = db.Column(db.Integer, nullable=False)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id_prod'), nullable=False)
+    sucursal_id = db.Column(db.Integer, db.ForeignKey('sucursal.id_suc'), nullable=False)   

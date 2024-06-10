@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PayPal Payment</title>
+    <script src="https://www.paypalobjects.com/api/checkout.js"></script>
+    <script>
+        paypal.Button.render({
+            env: 'sandbox', // sandbox | production
+            client: {
+                sandbox: 'AQF5Gi7NLLMsmFjU1mdLkVhFoipb4jPkNY_suDK_ix9xUFPAPUBvxPzrHqhiZuwT8yhk0aJ26tQfLlfL',
+                production: '<insert your production client id>'
+            },
+            payment: function(data, actions) {
+                return fetch('/payment', {
+                    method: 'post',
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                }).then(function(res) {
+                    return res.json();
+                }).then(function(data) {
+                    return data.paymentID;
+                });
+            },
+            onAuthorize: function(data, actions) {
+                return fetch('/execute', {
+                    method: 'post',
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        paymentID: data.paymentID,
+                        payerID: data.payerID
+                    })
+                }).then(function(res) {
+                    return res.json();
+                }).then(function(data) {
+                    alert('Pago completado!');
+                });
+            }
+        }, '#paypal-button');
+    </script>
+</head>
+<body>
+    <h1>Pagar con PayPal</h1>
+    <div id="paypal-button"></div>
+</body>
+</html>

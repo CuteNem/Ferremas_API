@@ -36,7 +36,14 @@ def agregar_producto():
     db.session.commit()
     return jsonify({"mensaje": "Nuevo producto añadido de forma exitosa"}), 201
 
-#obtener productos
+"""
+#obtener los producto dependiendo del id del estado
+@app.route('/productos_total/<int:estado_id>/estado', methods=['GET'])
+def obtener_productos_estado(estado_id):
+    productos = Producto.query.filter_by(estado_id=estado_id).all()
+    return jsonify([{"id": producto.id_prod, "nombre": producto.nombre_prod, "marca": producto.marca, "valor": producto.valor} for producto in productos])
+"""
+#ontiene total de productos en general
 @app.route('/productos_total', methods=['GET'])
 def obtener_total_productos():
     #producto = Producto.query.all()
@@ -55,28 +62,20 @@ def obtener_nuevos():
     nuevo_lanzamiento = Producto.query.filter_by(estado_id=2).all()
     return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor} for Producto in nuevo_lanzamiento])
 
+#OBTENER TODOS LOS PRODUCTOS SIN PROMOCION O LANZAMIENTO RECIENTE
 @app.route('/productos_normales', methods=['GET'])
 def obtener_normales():
     normales = Producto.query.filter_by(estado_id=3).all()
     return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor} for Producto in normales])
 
+#TODOS LOS PRODUCTOS QUE TENGAN UN HISTORIAL DE PRECIOS
 @app.route('/productos/<int:id_prod>/precios', methods=['GET'])
 def obtener_h_precios_producto(id_prod):
     producto = Producto.query.get_or_404(id_prod)
     precios_producto = H_precio.query.filter_by(producto_id=producto.id_prod).order_by(H_precio.fecha.desc()).all()
     return jsonify([{"precio": H_precio.precio, "fecha": H_precio.fecha} for H_precio in precios_producto])
 
-"""
-antiguo
-
-#VER PRODUCTOS POR SUCURSAL
-@app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
-def obtener_productos_por_sucursal(id_suc):
-    sucursal_inv = Sucursal.query.get_or_404(id_suc)
-    inventario_suc = Inventario.query.filter_by(sucursal_id=sucursal_inv.id_suc).all()
-    return jsonify([{"id del producto": Inventario.producto_id ,"cantidad": Inventario.stock} for Inventario in inventario_suc])
-"""
-
+#TODOS LOS PRODUCTOS DEPENDIENTO DEL ID DE LA SUCURSAL
 @app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
 def obtener_productos_por_sucursal(id_suc):
     sucursal_inv = Sucursal.query.get_or_404(id_suc)
@@ -103,23 +102,18 @@ def escribir_respuesta(id_consulta):
     db.session.commit()
     return jsonify({'mensaje': 'Respuesta creada correctamente'}), 201
 
+
 @app.route('/pregunta/<int:id_consulta>', methods=['GET'])
 def ver_pregunta(id_consulta):
     consulta = Consulta.query.get(id_consulta)
     if not consulta:
         return jsonify({'error': 'Consulta no encontrada'}), 404
-
     respuestas = Respuesta.query.filter_by(consulta_id=id_consulta).all()
-    datos_pregunta = {
-        'id': Consulta.id_consulta,
-        'customer_id': Consulta.cliente_id,
-        'seller_id': Consulta.vendedor_id,
-        'message': Consulta.mensaje,
-        'timestamp': Consulta.tiempo_de_consulta.strftime('%Y-%m-%d %H:%M:%S'),
-        'responses': [{'id': r.id_respuesta, 'mensaje': r.mensaje, 'Tiempo_respuesta': r.tiempo_de_respuesta.strftime('%Y-%m-%d %H:%M:%S')} for r in respuestas]
-    }
-    return jsonify(datos_pregunta)
-
+    return jsonify  ([{'id_consulta': consulta.id_consulta,'cliente_id': consulta.cliente_id,'vendedor_id': consulta.vendedor_id,
+                    'mensaje': consulta.mensaje,
+                    'tiempo_de_consulta': consulta.tiempo_de_consulta.strftime('%Y-%m-%d %H:%M:%S'),
+                    'respuestas': [{'id_respuesta': r.id_respuesta,'mensaje': r.mensaje,'tiempo_de_respuesta': r.tiempo_de_respuesta.strftime('%Y-%m-%d %H:%M:%S')} for r in respuestas ]
+                    }])
 
 
 

@@ -64,8 +64,9 @@ def obtener_producto_de_una_sucursal(id_prod):
         inventario_producto = db.session.query(Inventario, Sucursal, Producto).join(Sucursal, Inventario.sucursal_id == Sucursal.id_suc).join(Producto, Inventario.producto_id == Producto.id_prod).filter(Inventario.producto_id == id_prod).all()
         return jsonify([{"nombre del producto": Producto.nombre_prod ,"id del producto": Inventario.producto_id ,"nombre de la sucursal": Sucursal.nombre_suc,"cantidad": Inventario.stock} for Inventario, Sucursal, Producto in inventario_producto])
 
+
 #sistema de consultas y respuestas
-@app.route('/pregunta', methods=['POST'])
+@app.route('/hacer_consulta', methods=['POST'])
 def hacer_consulta():
     data = request.json
     pregunta = Consulta(cliente_id=data['cliente_id'], vendedor_id=data['vendedor_id'], mensaje=data['mensaje'])
@@ -73,10 +74,11 @@ def hacer_consulta():
     db.session.commit()
     return jsonify({'mensaje': 'Consulta creada correctamente'}), 201
 
-@app.route('/pregunta/<int:id_consulta>/respuesta', methods=['POST'])
+
+@app.route('/consulta/responder_consultas', methods=['POST'])
 def escribir_respuesta(id_consulta):
     consulta = Consulta.query.get(id_consulta)
-    if not consulta:
+    if consulta:
         return jsonify({'error': 'Consulta no encontrada'}), 404
     data = request.json
     respuesta = Respuesta(consulta_id=id_consulta, mensaje=data['mensaje'])
@@ -96,28 +98,6 @@ def ver_pregunta(id_consulta):
                     'tiempo_de_consulta': consulta.tiempo_de_consulta.strftime('%Y-%m-%d %H:%M:%S'),
                     'respuestas': [{'id_respuesta': r.id_respuesta,'mensaje': r.mensaje,'tiempo_de_respuesta': r.tiempo_de_respuesta.strftime('%Y-%m-%d %H:%M:%S')} for r in respuestas ]
                     }])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #Mensaje de bienvenida
 @app.route('/',methods=['GET'])

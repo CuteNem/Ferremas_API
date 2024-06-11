@@ -73,11 +73,13 @@ class Boleta(db.Model):
     fecha_boleta = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     peso = db.Column(db.Integer, nullable=False)
     conversion = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Integer, nullable=False)
 
 class Detalle_boleta(db.Model):
     id_detalle = db.Column(db.Integer, primary_key=True)
-    id_boleta = db.Column(db.Integer, db.ForeingnKey('boleta.id_boleta'), nullable=False)
+    id_boleta = db.Column(db.Integer, db.ForeignKey('boleta.id_boleta'), nullable=False)
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_prod'), nullable=False)
     precio_unitario = db.Column(db.Integer,nullable=False)
     cantidad = db.Column(db.Integer,nullable=False)
-    
+    subtotal = db.Column(db.Integer,nullable=False)
+    boleta = db.relationship('Boleta', backref=db.backref('detalles', lazy=True))

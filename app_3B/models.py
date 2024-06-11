@@ -66,3 +66,7 @@ class Cliente(db.Model):
     nombre_cli = db.Column(db.String(100), nullable=False)
     correo_cli = db.Column(db.String(150), nullable=False, unique=True)
     contra_cli = db.Column(db.String(500), nullable=False)
+
+
+
+#class Detalle_boleta(db.Model):

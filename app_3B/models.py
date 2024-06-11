@@ -59,9 +59,10 @@ class Vendedor(db.Model):
     nombre_vend = db.Column(db.String(100), nullable=False)
     correo_vend = db.Column(db.String(150), nullable=False, unique=True)
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria_pdt.id_cat'), nullable=False)
+    contra_vend = db.Column(db.String(100),nullable=False)
 
 class Cliente(db.Model):
     rut_cli = db.Column(db.Integer, primary_key=True)
     nombre_cli = db.Column(db.String(100), nullable=False)
     correo_cli = db.Column(db.String(150), nullable=False, unique=True)
-    # contra_cli = db.Column(db.String(100), nullable=False)
+    contra_cli = db.Column(db.String(500), nullable=False)

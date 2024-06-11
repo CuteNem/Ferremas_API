@@ -142,9 +142,32 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 
+"""
+#TODOS LOS PRODUCTOS DEPENDIENTO DEL ID DE LA SUCURSAL
+@app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
+def obtener_productos_por_sucursal(id_suc):
+    sucursal_inv = Sucursal.query.get_or_404(id_suc)
+    inventario_suc = db.session.query(Inventario, Producto).join(Producto, Inventario.producto_id == Producto.id_prod).filter(Inventario.sucursal_id==sucursal_inv.id_suc).all()
+    return jsonify([{"id del producto": Inventario.producto_id ,"nombre del producto": producto.nombre_prod,"cantidad": Inventario.stock} for Inventario, producto in inventario_suc])
 
+#ontiene total de productos en general
+@app.route('/productos_total', methods=['GET'])
+def obtener_total_productos():
+    #producto = Producto.query.all()
+    productos = db.session.query(Producto, Estado, Categoria_pdt).join(Estado, Producto.estado_id == Estado.id_estado).join(Categoria_pdt, Producto.categoria_id == Categoria_pdt.id_cat).all()
+    return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor, "categoria": categoria.nombre_cat, "estado": estado.tipo_estado} for Producto, estado, categoria in productos])
 
+#OBTENER PRODUCTOS EN PROMOCION
+@app.route('/promociones', methods=['GET'])
+def obtener_promos():
+    promociones = Producto.query.filter_by(estado_id=1).all()
+    return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor} for Producto in promociones])
 
+#OBTENER nuevos lanzamientos
+@app.route('/nuevos_lanzamientos', methods=['GET'])
+def obtener_nuevos():
+    nuevo_lanzamiento = Producto.query.filter_by(estado_id=2).all()
+    return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor} for Producto in nuevo_lanzamiento])
 
 
 

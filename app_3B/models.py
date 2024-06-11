@@ -67,6 +67,16 @@ class Cliente(db.Model):
     correo_cli = db.Column(db.String(150), nullable=False, unique=True)
     contra_cli = db.Column(db.String(500), nullable=False)
 
+class Boleta(db.Model):
+    id_boleta = db.Column(db.Integer, primary_key=True)
+    cliente_rut = db.Column(db.Integer, db.ForeignKey('cliente.rut_cli'), nullable=False)
+    fecha_boleta = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    peso = db.Column(db.Integer, nullable=False)
+    conversion = db.Column(db.Integer, nullable=False)
 
-
-#class Detalle_boleta(db.Model):
+class Detalle_boleta(db.Model):
+    id_detalle = db.Column(db.Integer, primary_key=True)
+    id_boleta = db.Column(db.Integer, db.ForeingnKey('boleta.id_boleta'), nullable=False)
+    id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_prod'), nullable=False)
+    precio_unitario = db.Column(db.Integer,nullable=False)
+    cantidad = db.Column(db.Integer,nullable=False)

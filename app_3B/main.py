@@ -31,7 +31,9 @@ def obtener_categorias():
 
 @app.route('/categorias/<int:id_cat>/productos', methods=['GET'])
 def obtener_productos_por_categoria(id_cat):
-    categoria = Categoria_pdt.query.get_or_404(id_cat)
+    categoria = Categoria_pdt.query.get(id_cat)
+    if not categoria:
+        return jsonify({'error': 'Este categoria no existe/no posee productos'}), 404
     return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor, "categoria": Producto.categoria_id, "estado": Producto.estado_id} for Producto in categoria.productos])
 
 @app.route('/productos', methods=['POST'])
@@ -60,7 +62,9 @@ def obtener_productos_estado(id_estado):
 #TODOS LOS PRODUCTOS QUE TENGAN UN HISTORIAL DE PRECIOS
 @app.route('/productos/<int:id_prod>/precios', methods=['GET'])
 def obtener_h_precios_producto(id_prod):
-    producto = Producto.query.get_or_404(id_prod)
+    producto = Producto.query.get(id_prod)
+    if not producto:
+        return jsonify({'error': 'Este producto no existe/no posee un historial de precios'}), 404
     precios_producto = H_precio.query.filter_by(producto_id=producto.id_prod).order_by(H_precio.fecha.desc()).all()
     return jsonify([{"precio": H_precio.precio, "fecha": H_precio.fecha} for H_precio in precios_producto])
 

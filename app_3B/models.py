@@ -80,3 +80,4 @@ class Detalle_boleta(db.Model):
     id_producto = db.Column(db.Integer, db.ForeignKey('producto.id_prod'), nullable=False)
     precio_unitario = db.Column(db.Integer,nullable=False)
     cantidad = db.Column(db.Integer,nullable=False)
+    

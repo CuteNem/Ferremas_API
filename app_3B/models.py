@@ -83,3 +83,4 @@ class Detalle_boleta(db.Model):
     cantidad = db.Column(db.Integer,nullable=False)
     subtotal = db.Column(db.Integer,nullable=False)
     boleta = db.relationship('Boleta', backref=db.backref('detalles', lazy=True))
+

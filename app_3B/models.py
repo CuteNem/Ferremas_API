@@ -72,8 +72,7 @@ class Boleta(db.Model):
     cliente_rut = db.Column(db.Integer, db.ForeignKey('cliente.rut_cli'), nullable=False)
     fecha_boleta = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     peso = db.Column(db.Integer, nullable=False)
-    conversion = db.Column(db.Integer, nullable=False)
-    total = db.Column(db.Integer, nullable=False)
+    conversion = db.Column(db.Numeric(9, 2), nullable=False)
 
 class Detalle_boleta(db.Model):
     id_detalle = db.Column(db.Integer, primary_key=True)

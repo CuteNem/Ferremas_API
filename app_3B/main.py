@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 from database.db import Config
-from models import db, Categoria_pdt, Producto, Sucursal, Estado, H_precio, Inventario, Vendedor, Cliente, Consulta, Respuesta
+from models import Boleta, Detalle_boleta, db, Categoria_pdt, Producto, Sucursal, Estado, H_precio, Inventario, Vendedor, Cliente, Consulta, Respuesta
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token
 from datetime import datetime
@@ -14,9 +14,7 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
-#@app.before_first_request
-#def create_tables():
-#    db.create_all()
+
 app.config["JWT_SECRET_KEY"] = "a"
 jwt = JWTManager(app)
 
@@ -300,18 +298,95 @@ def ingresar_usuario():
 
 
 
+# intento de confirmacion y cambio de stock
+#stock
+def cambiar_stock(data):
+    try:
+        update_query = ("UPDATE inventario SET stock = (stock - :cantidad) WHERE producto_id = :producto_id AND sucursal_id = :sucursal_id")
+        affected_rows = db.session.execute(update_query, {'cantidad': data.get('cantidad'),'producto_id': data.get('producto_id'),'sucursal_id': data.get('sucursal_id')}).rowcount
+        db.session.commit()
+        return affected_rows
+    except Exception as ex:
+        return str(ex)
+
+def saber_stock(id_prod, sucursal_id):
+    try:
+        inventario = Inventario.query.filter_by(producto_id=id_prod, sucursal_id=sucursal_id).first()
+        if inventario:
+            stock = inventario.stock
+            return stock
+        else:
+            return None
+    except Exception as ex:
+        return str(ex)
 
 
+#crear boleta
+@app.route('/crear_boleta', methods=['POST'])
+def crear_boleta():
+    try:
+        data = request.json
+        cliente_rut = data.get('cliente_rut')
+        id_producto = data.get('id_producto')
+        cantidad = data.get('cantidad')
+        sucursal_id = data.get('sucursal_id')
 
+        if not cliente_rut or not id_producto or not cantidad or not sucursal_id:
+            return jsonify({"error": "cliente_rut, id_producto, cantidad y sucursal_id son requeridos"}), 400
+        producto = Producto.query.get(id_producto)
 
+        if not producto:
+            return jsonify({"error": "Producto no encontrado"}), 404
+        
+        # intenta cer si hay suficiente stock disponible en la sucursal
+        stock_disponible = saber_stock(id_producto, sucursal_id)
+        if stock_disponible is None or stock_disponible < cantidad:
+            return jsonify({"error": "No hay suficiente stock disponible en la sucursal"}), 400
+        # intenta restar la cantidad vendida en la sucursal
+        cambiar_stock({
+            'cantidad': cantidad,
+            'id_prod': id_producto,
+            'id_suc': sucursal_id
+        })
 
+        #boleta
+        nueva_boleta = Boleta(
+            cliente_rut=cliente_rut,
+            fecha_boleta=datetime.utcnow(),
+            peso=cantidad * producto.valor,  
+            conversion=convertir_a_dolares(cantidad * producto.valor),
+        )
+        db.session.add(nueva_boleta)
+        db.session.commit()
 
+        #detalle de la boleta
+        nuevo_detalle = Detalle_boleta(
+            id_boleta=nueva_boleta.id_boleta,
+            id_producto=id_producto,
+            precio_unitario=producto.valor,
+            cantidad=cantidad,
+            subtotal=cantidad * producto.valor
+            )
+        db.session.add(nuevo_detalle)
+        db.session.commit()
 
+        return jsonify({"mensaje": "Boleta creada con éxito", "boleta": {
+            "id_boleta": nueva_boleta.id_boleta,
+            "cliente_rut": nueva_boleta.cliente_rut,
+            "fecha_boleta": nueva_boleta.fecha_boleta.strftime('%a, %d %b %Y %H:%M:%S GMT'),
+            "peso": nueva_boleta.peso,
+            "conversion": nueva_boleta.conversion,
+            "detalle": {
+                "id_detalle": nuevo_detalle.id_detalle,
+                "id_producto": nuevo_detalle.id_producto,
+                "precio_unitario": nuevo_detalle.precio_unitario,
+                "cantidad": nuevo_detalle.cantidad,
+                "subtotal": nuevo_detalle.subtotal
+            }
+        }}), 201
 
-
-
-
-
+    except Exception as ex:
+        return jsonify({"error": str(ex)}), 500
 
 
 
@@ -325,8 +400,13 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 
+
+
+
+
 """
-TEST's
+TEST's de cosas que al final no se ocuparon ya que no era lo requerido
+
 #TODOS LOS PRODUCTOS DEPENDIENTO DEL ID DE LA SUCURSAL
 @app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
 def obtener_productos_por_sucursal(id_suc):
@@ -371,3 +451,5 @@ def obtener_normales():
     normales = Producto.query.filter_by(estado_id=3).all()
     return jsonify([{"id": Producto.id_prod, "nombre": Producto.nombre_prod, "marca": Producto.marca, "valor": Producto.valor} for Producto in normales])
 """
+
+

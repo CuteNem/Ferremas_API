@@ -119,20 +119,6 @@ def ver_pregunta(id_consulta):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #Mensaje de bienvenida
 @app.route('/',methods=['GET'])
 def index():
@@ -142,13 +128,8 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 
-
-
-
-
-
-
-""" TEST's
+"""
+TEST's
 #TODOS LOS PRODUCTOS DEPENDIENTO DEL ID DE LA SUCURSAL
 @app.route('/sucursales/<int:id_suc>/productos', methods=['GET'])
 def obtener_productos_por_sucursal(id_suc):
